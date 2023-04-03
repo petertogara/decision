@@ -20,12 +20,27 @@ spring:
     generate-ddl: true
   cloud:
     function:
-      definition: handleCustomerCreated
+      definition: processCustomerCreated
     stream:
+      kafka:
+        bindings:
+          processCustomerCreated-in-0:
+            consumer:
+              enable-dlq: true
       bindings:
-        handleCustomerCreated-in-0:
-                          destination: customer-topic
-                          group: decision-microservice
+        processCustomerCreated-in-0:
+          group: decision-microservice
+          consumer:
+            max-attempts: 5
+            back-off-initial-interval: 6500
+            back-off-multiplier: 4
+            back-off-max-interval: 10000
+          destination: customer-topic
+
+        processCustomerCreated-out-0:
+          destination: decision-topic
+
+
 
 logging:
   pattern:
